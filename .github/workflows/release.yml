@@ -1,0 +1,51 @@
+name: Build Windows app
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Build installer, portable exe and zip
+        run: npm run dist
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Read version
+        id: v
+        shell: bash
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.version }}
+          name: Arrazi ${{ steps.v.outputs.version }}
+          make_latest: true
+          body: |
+            **Easiest:** download **Arrazi-Setup-${{ steps.v.outputs.version }}.exe**, double-click it and follow the steps. It adds Arrazi to the Start menu and the desktop.
+
+            If Windows shows "Windows protected your PC", click **More info → Run anyway** (the app is not code-signed).
+
+            Other options: `Arrazi-${{ steps.v.outputs.version }}-portable.exe` runs without installing (wait ~30 s on first start), or extract `Arrazi-${{ steps.v.outputs.version }}-win-x64.zip` and run `Arrazi.exe`.
+          files: |
+            release/*.exe
+            release/*.zip
+          overwrite_files: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arrazi-windows
+          path: |
+            release/*.exe
+            release/*.zip
