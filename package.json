@@ -15,8 +15,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "icons": "node scripts/make-icons.mjs",
     "preview": "node scripts/build.mjs --preview",
-    "dist": "node scripts/build.mjs && electron-builder --win --x64",
-    "dist:portable": "node scripts/build.mjs && electron-builder --win portable zip --x64",
+    "dist": "node scripts/build.mjs && electron-builder --win --x64 --publish never",
+    "dist:portable": "node scripts/build.mjs && electron-builder --win portable zip --x64 --publish never",
     "test:e2e": "node scripts/build.mjs --preview && node tools/e2e.mjs"
   },
   "devDependencies": {
