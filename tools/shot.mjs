@@ -1,0 +1,20 @@
+// usage: node tools/shot.mjs <entry.ts> <out.png> [query] [width] [height]
+import * as esbuild from 'esbuild';
+import { createRequire } from 'node:module';
+const { chromium } = createRequire('/opt/node22/lib/node_modules/')('playwright');
+import fs from 'node:fs';
+const [entry, out, query = '', w = '1400', h = '900'] = process.argv.slice(2);
+const r = await esbuild.build({ entryPoints: [entry], bundle: true, write: false, format: 'iife', jsx: 'automatic', loader: { '.woff2': 'dataurl', '.svg': 'text' }, define: { __APP_VERSION__: '"dev"', __PREVIEW__: 'true', 'process.env.NODE_ENV': '"production"' } });
+const js = r.outputFiles.find(f => f.path.endsWith('.js'))?.text ?? r.outputFiles[0].text;
+const css = r.outputFiles.find(f => f.path.endsWith('.css'))?.text ?? '';
+const html = `<!doctype html><html><head><meta charset="utf-8"><style>${css}</style></head><body><script>${js}</script></body></html>`;
+const tmp = '/tmp/claude-0/-home-user/1fd5bcc5-1694-5d31-9902-b00b09774146/scratchpad/sheet.html';
+fs.writeFileSync(tmp, html);
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: +w, height: +h } });
+page.on('console', m => console.log('console:', m.text()));
+page.on('pageerror', e => console.log('pageerror:', e.message));
+await page.goto('file://' + tmp + (query ? '?' + query : ''));
+await page.waitForTimeout(500);
+await page.screenshot({ path: out, fullPage: true });
+await browser.close();

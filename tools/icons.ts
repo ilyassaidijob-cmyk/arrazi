@@ -1,0 +1,34 @@
+import { ACHIEVEMENTS } from '../src/renderer/core/achievements';
+import { BOSSES } from '../src/renderer/core/catalog';
+import { badgeUrl, challengeBadgeUrl, leaderBadgeUrl } from '../src/renderer/art/badges';
+import { bossUrl } from '../src/renderer/art/bosses';
+import { iconUrl, projectIconUrl, gearUrl, homeIconUrl } from '../src/renderer/art/icons';
+import { crowFlyUrl, crowPerchUrl } from '../src/renderer/art/sprites';
+document.body.style.cssText = 'margin:8px;background:#1e1e1e;color:#ccc;font:11px monospace';
+const add = (url: string, scale: number, label = '') => {
+  const d = document.createElement('div');
+  d.style.cssText = 'display:inline-flex;flex-direction:column;align-items:center;margin:4px;width:' + 'auto';
+  const img = new Image();
+  img.src = url;
+  img.style.imageRendering = 'pixelated';
+  img.onload = () => { img.style.width = img.naturalWidth * scale + 'px'; };
+  d.appendChild(img);
+  if (label) { const s = document.createElement('span'); s.textContent = label; d.appendChild(s); }
+  document.body.appendChild(d);
+};
+const br = () => document.body.appendChild(document.createElement('br'));
+for (const n of ['coin','exp','flame','freeze','clock','check','lock','play','pause','skip','stop','plus','close','trash','edit','link','warn','back','next','up','down','drag','note','calendar','moon','sword','chest','badge','book','crown','star','eye','ghost','crow','hourglass','target','mini','sound','mute','shirt','gem','scroll','sun','bell']) add(iconUrl(n), 4, n);
+br();
+for (const n of ['shield','note','dumbbell','book','code','globe','brush','flask','abacus','leaf']) add(projectIconUrl(n), 4, n);
+add(homeIconUrl('trophy'), 4); add(gearUrl(), 4);
+br();
+for (const a of ACHIEVEMENTS) add(badgeUrl(a.id, a.type, false), 3, a.id.slice(0, 10));
+br();
+for (const a of ACHIEVEMENTS.slice(0, 6)) add(badgeUrl(a.id, a.type, true), 3);
+add(badgeUrl('night_owl', 'Focus', true, true), 3, 'hidden');
+for (let m = 0; m < 4; m++) add(challengeBadgeUrl(m * 3, m % 2 === 0), 3);
+add(leaderBadgeUrl('focus'), 3); add(leaderBadgeUrl('streak'), 3);
+br();
+for (const b of BOSSES) add(bossUrl(b.id), 4, b.id);
+add(bossUrl('owl', true), 4, 'hurt');
+for (let f = 0; f < 3; f++) add(crowFlyUrl(f), 5); for (let f = 0; f < 3; f++) add(crowPerchUrl(f), 5);
